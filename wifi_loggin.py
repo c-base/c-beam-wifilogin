@@ -19,7 +19,7 @@ regex = re.compile('(.*Login OK: \[)(?P<username>[^\]]*)(.*)')
 while True:
     line = f.readline()
     match = regex.match(line)
-    if (match)
+    if (match):
         user = match.groupdict()['username']
         if user in userwantsme:
             cbeam.login(user)
