@@ -19,10 +19,13 @@ Change your radiusd.conf to following:
     }
 + simple install
     #!/bin/sh
+    mkfifo /var/run/rsyslog-freeradius.pipe
+    chmod og-rwx /var/run/rsyslog-freeradius.pipe
     cp wifi_login.py /usr/local/bin/
     cp wifi_login.rsyslog.conf /etc/rsyslog.d/
     cp wifi_login.supervisor.conf /etc/supervisor/conf.d/
-    /etc/init.d/supervisor reload
+    /etc/init.d/supervisor restart
+    /etc/init.d/rsyslog reload
 
 ## ToDo
   * use a ldap field for opt-in
