@@ -1,12 +1,45 @@
 #!/usr/bin/env python
 import jsonrpclib
 import re
+import ldap
+
+class Config:
+    basedn = 'ou=crew,dc=c-base,dc=org'
+    uri = 'ldap://<LDAPLOGIN>'
+    numberAttr = 'uidNumber'
+    nameAttr = 'uid'
+    wlanAttr = 'wlanPresence'
+
+def openConnection():
+    cfg = Config()
+    return ldap.initialize(cfg.uri)
+
+def getLdapArgForFilter(ldapfilter, searchAttr):
+    cfg = Config
+    connection = openConnection()
+    searchingAttr = list([searchAttr])
+    entry = connection.search_s( cfg.basedn, ldap.SCOPE_SUBTREE, ldapfilter, searchingAttr)
+    if len(entry) == 1:
+        if len(entry[0][1]) == 1:
+            return entry[0][1][searchAttr][0]
+    return None
+
+
+def getUserWantsWlanPresence(userName):
+    cfg = Config
+    ldapfilter = "(%s=%s)" % (cfg.nameAttr, userName)
+    wantWlanPresence = getLdapArgForFilter(ldapfilter, cfg.wlanAttr)
+    if wantWlanPresence == 'TRUE':
+        return True
+    else:
+        return False
+
+
+def logme(log):
+    print(log)
 
 jsonrpclib.config.version = 1.0
-cbeam = jsonrpclib.Server('http://10.0.1.27:4254')
-
-userwantsme = []
-userwantsme.append('lynxis')
+cbeam = jsonrpclib.Server('http://c-leuse:4254')
 
 #cbeam.login('lynxis')
 
@@ -20,6 +53,9 @@ while True:
     line = f.readline()
     match = regex.match(line)
     if (match):
-        user = match.groupdict()['username']
-        if user in userwantsme:
-            cbeam.login(user)
+        user = (match.groupdict()['username']).lower()
+        logme("checking for user %s\n" % user)
+        if getUserWantsWlanPresence(user):
+            logme("announcement for user %s\n" % user)
+            cbeam.wifi_login(user)
+
