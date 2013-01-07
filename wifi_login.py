@@ -55,7 +55,10 @@ while True:
     if (match):
         user = (match.groupdict()['username']).lower()
         logme("checking for user %s\n" % user)
-        if getUserWantsWlanPresence(user):
-            logme("announcement for user %s\n" % user)
+        if user in userwantsme:
+            logme("user %s is in manual list\n" % user)
             cbeam.wifi_login(user)
-
+        elif getUserWantsWlanPresence(user):
+            logme("user %s over ldap\n" % user)
+            cbeam.wifi_login(user)
+            cbeam.wifi_login(user)
